@@ -1,7 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 const int maxn = 1e3 + 5;
-#define cerr cout
+const int update_end_cnt = 1;
+//#define cerr cout
 //记录空间中的点
 struct point {
     int x, y, z;
@@ -35,7 +36,7 @@ bool check_vis(point p) {
     return false;
 }
 //方向向量
-int dir[8][3] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
+int dir[6][3] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
 //设置距离
 int dist[maxn][maxn][maxn];
 bool set_dist(point p, point pre) {
@@ -47,28 +48,38 @@ bool set_dist(point p, point pre) {
 }
 //遍历点序列
 point q[maxn];
-int front = 0, rear = -1, ed_idx;
-int pre[maxn];
+int front = 0, rear = -1;
+int pre[maxn], min_path_length = -1, cnt = 0;
+vector<int> ed_idxs;
 bool search() {
     cerr << "正在寻找最短路径" << endl;
     memset(dist, 0x3f, sizeof dist);
     dist[st.x][st.y][st.z] = 0;
+    vis[st.x][st.y][st.z] = 1;
     q[++rear] = st;
     while (front <= rear) {
         point now = q[front++];
+        vis[now.x][now.y][now.z] = 0;
+        if (min_path_length != -1 && dist[now.x][now.y][now.z] > min_path_length) continue;
         if (now == ed) {
-            ed_idx = front - 1;
-            return 1;
+            cerr << "找到一条最短路径了～" << front - 1 << endl;
+            if (min_path_length == -1 || (dist[now.x][now.y][now.z] <= min_path_length)) {
+                min_path_length = dist[now.x][now.y][now.z];
+                ed_idxs.push_back(front - 1);
+            }
+            continue;
         }
-        for (int i = 0; i < 8; ++i) {
+        
+        for (int i = 0; i < 6; ++i) {
             point nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
             if (check_vis(nx) || vis[nx.x][nx.y][nx.z]) continue;
             if (!set_dist(nx, now)) continue;
             q[++rear] = nx;
+            vis[nx.x][nx.y][nx.z] = 1;
             pre[rear] = front - 1;
         }
     }
-    return 0;
+    return ed_idxs.size();
 }
 //路径序列
 vector< point > paths;
@@ -79,16 +90,17 @@ bool getpath() {
         return 0;
     }
     cerr << "开始记录路径所经过点" << endl;
-    int now = ed_idx;
-    while (now != 0) {
-        paths.push_back(q[now]);
-        now = pre[now];
-    }
-    paths.push_back(q[0]);
-    reverse(paths.begin(), paths.end());
-    cerr << "路径经过" << paths.size() << "个点。" << endl;
-    for (auto i : paths) {
-        cerr << i << endl;
+    for (auto now : ed_idxs) {
+        while (now != 0) {
+            paths.push_back(q[now]);
+            now = pre[now];
+        }
+        paths.push_back(q[0]);
+        reverse(paths.begin(), paths.end());
+        cerr << "路径经过" << paths.size() << "个点。" << endl;
+        for (auto i : paths) {
+            cerr << i << endl;
+        }
     }
     return paths[0] == st && paths.back() == ed;
 }
@@ -98,8 +110,8 @@ bool check_segment_cross_obstacle(point P, point Q, int i) {
     double t1, t2;
     //cerr << "vector " << P << "->" << Q << "insect judge with box" << i << endl;
     if (Q.x == 0) {
-        if (L <= P.x && P.x <= R)
-            return true;
+        if (!(L <= P.x && P.x <= R))
+            return false;
     }
     else {
         t1 = 1.0 * (L - P.x) / Q.x;
