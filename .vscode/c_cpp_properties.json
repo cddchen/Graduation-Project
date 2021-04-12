@@ -6,7 +6,11 @@
             "macFrameworkPath": [
                 "/System/Library/Frameworks",
                 "/Library/Frameworks",
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/Applications/Polyspace/R2020a/extern/include/"
+            ],
+            "includePath": [
+                "/Applications/Polyspace/R2020a/extern/include/",
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
