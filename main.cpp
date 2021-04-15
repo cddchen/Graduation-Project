@@ -17,6 +17,13 @@ struct point {
     point operator -(const point& rhs) const {
         return point(x - rhs.x, y - rhs.y, z - rhs.z);
     }
+    bool operator <(const point& rhs) const  {
+        if (x != rhs.x)
+            return x < rhs.x;
+        if (y != rhs.y)
+            return y < rhs.y;
+        return z < rhs.z;
+    }
     friend ostream & operator <<(ostream & os,const point & p){
         return os << "(" << p.x << ", " << p.y << " ," << p.z << ")";
     }
@@ -24,94 +31,19 @@ struct point {
 double get_dist(point a, point b) {
     return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
 }
+int get_sqr_dist(point a, point b) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
+}
 void read(point &t) {
     scanf("%d%d%d", &t.x, &t.y, &t.z);
 }
 int n;
+int max_x, max_y, max_z;
 //立方体模型
 struct node {
     point lb, ru;
 } box[maxn];
 point st, ed;
-//检查点是否出界
-bool vis[maxn][maxn][maxn];
-bool check_vis(point p) { 
-    if (p.x < 0 || p.y < 0 || p.z < 0)
-        return true;
-    if (vis[p.x][p.y][p.z])
-        return true;
-    return false;
-}
-//方向向量
-int dir[6][3] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
-//设置距离
-int dist[maxn][maxn][maxn];
-bool set_dist(point p, point pre) {
-    if (dist[p.x][p.y][p.z] > dist[pre.x][pre.y][pre.z] + 1) {
-        dist[p.x][p.y][p.z] = dist[pre.x][pre.y][pre.z] + 1;
-        return 1;
-    }
-    return 0;
-}
-//遍历点序列
-point q[maxn];
-int front = 0, rear = -1;
-int pre[maxn], min_path_length = -1, cnt = 0;
-vector<int> ed_idxs;
-//SPFA
-bool search() {
-    cerr << "正在寻找最短路径" << endl;
-    memset(dist, 0x3f, sizeof dist);
-    dist[st.x][st.y][st.z] = 0;
-    vis[st.x][st.y][st.z] = 1;
-    q[++rear] = st;
-    while (front <= rear) {
-        point now = q[front++];
-        vis[now.x][now.y][now.z] = 0;
-        if (min_path_length != -1 && dist[now.x][now.y][now.z] > min_path_length) continue;
-        if (now == ed) {
-            if (min_path_length == -1 || (dist[now.x][now.y][now.z] <= min_path_length)) {
-                min_path_length = dist[now.x][now.y][now.z];
-                ed_idxs.push_back(front - 1);
-            }
-            continue;
-        }
-        
-        for (int i = 0; i < 6; ++i) {
-            point nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
-            if (check_vis(nx)) continue;
-            if (!set_dist(nx, now)) continue;
-            q[++rear] = nx;
-            vis[nx.x][nx.y][nx.z] = 1;
-            pre[rear] = front - 1;
-        }
-    }
-    return ed_idxs.size();
-}
-//路径序列
-vector< point > paths;
-bool getpath() {
-    bool is_find_path = search();
-    if (!is_find_path) {
-        cerr << "没有找到路径！" << endl;
-        return 0;
-    }
-    cerr << "共找到" << ed_idxs.size() << "条最短路径" << endl;
-    cerr << "开始记录路径所经过点" << endl;
-    for (auto now : ed_idxs) {
-        while (now != 0) {
-            paths.push_back(q[now]);
-            now = pre[now];
-        }
-        paths.push_back(q[0]);
-        reverse(paths.begin(), paths.end());
-        cerr << "路径经过" << paths.size() << "个点。" << endl;
-        for (auto i : paths) {
-            cerr << i << endl;
-        }
-    }
-    return paths[0] == st && paths.back() == ed;
-}
 //判断线段与面相交，P+tQ的向量与第i个box相交判断
 bool check_segment_cross_obstacle(point P, point Q, int i) {
     int L = box[i].lb.x, R = box[i].ru.x;
@@ -168,41 +100,100 @@ int check_segement_cross_all_obstacles(point s, point t) {
     }
     return -1;
 }
-//拟合路径 
-vector<double> dp_dist;
-vector<point> ans;
-void calc_path() {
-    if (!getpath()) {
-        cerr << "未找到路径！" << endl;
-        return;
+
+//检查点是否出界
+bool vis[maxn][maxn][maxn];
+bool check_vis(point p) { 
+    if (p.x < 0 || p.y < 0 || p.z < 0)
+        return true;
+    if (p.x > max_x + 1 || p.y > max_y + 1 || p.z > max_z + 1)
+        return true;
+    //if (vis[p.x][p.y][p.z])
+        //return true;
+    return false;
+}
+//方向向量      
+int dir[6][3] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
+point arr[maxn];
+int front, rear, before_p[maxn];
+double dist[maxn], min_dist;
+bool min_dist_flg = false;
+struct heap_node {
+    double h, g;
+    int id;
+    heap_node() {}
+    heap_node(double _h, double _g, int _id) : h(_h), g(_g), id(_id) {}
+    bool operator <(const heap_node& rhs) const {
+        return h + g < rhs.h + rhs.g;
     }
-    dp_dist.resize(paths.size());
-    for (int i = 0; i < paths.size(); ++i) {
-        if (!i) dp_dist[i] = 0;
-        else dp_dist[i] = 1.0 * INF;
-        for (int j = 0; j < i; ++j) {
-            if (check_segement_cross_all_obstacles(paths[j], paths[i]) == -1) {
-                double dist_of_ij = get_dist(paths[j], paths[i]);
-                if (dist_of_ij + dp_dist[j] < dp_dist[i]) {
-                    pre[i] = j;
-                    dp_dist[i] = dp_dist[j] + dist_of_ij;
+    bool operator >(const heap_node& rhs) const {
+        return h + g > rhs.h + rhs.g;
+    }
+};
+//记录该点对应数组的位置
+map<pair<int, pair<int, int>>, int> record;
+pair<int, pair<int, int>> point2pair(point p) {
+    return make_pair(p.x, make_pair(p.y, p.z));
+}
+priority_queue<heap_node, vector<heap_node>, greater<heap_node>> Q;
+bool Astar() {
+    cerr << "A*算法搜索可达路径中。。。" << endl;
+    front = 0, rear = -1;
+    arr[++rear] = st; Q.push({0, get_dist(st, ed), 0}); before_p[0] = -1; dist[0] = 0;
+    record.clear(); record[point2pair(st)] = 0; vis[st.x][st.y][st.z] = 1;
+    while (!Q.empty()) {
+        heap_node top = Q.top(); Q.pop();
+        point now = arr[top.id];
+        //cerr << now << endl;
+        if (now == ed) {
+            min_dist = top.h;
+            return true;
+        }
+        for (int i = 0; i < 6; ++i) {
+            point nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
+            if (check_vis(nx)) continue;
+            if (!vis[nx.x][nx.y][nx.z]) {
+                arr[++rear] = nx;
+                dist[rear] = 1.0 * INF;
+                record[point2pair(nx)] = rear;
+                vis[nx.x][nx.y][nx.z] = 1;
+                for (int pre = 0; pre < rear; ++pre) {
+                    if (dist[pre] + get_dist(arr[pre], nx) < dist[rear]) if (check_segement_cross_all_obstacles(arr[pre], nx) == -1){
+                        dist[rear] = dist[pre] + get_dist(arr[pre], nx);
+                        before_p[rear] = pre;
+                    }
+                    
+                }
+                Q.push({dist[rear], get_dist(nx, ed), rear});
+            }
+            else if (record.count(point2pair(nx))) {
+                int id = record[point2pair(nx)];
+                for (int pre = id + 1; pre <= rear; ++pre) if (check_segement_cross_all_obstacles(arr[pre], nx) == -1) {
+                    dist[id] = min(dist[id], dist[pre] + get_dist(arr[pre], nx));
                 }
             }
         }
     }
-    for (int i = paths.size() - 1; i > 0; i = pre[i]) {
-        ans.push_back(paths[i]);
+    return false;
+}
+vector< point > paths;
+void getpath() {
+    bool is_find_path = Astar();
+    if (!is_find_path) {
+        cerr << "没有找到路径！" << endl;
+        return;
     }
-    ans.push_back(st);
-    cerr << "拟合完毕，路线为：";
-    reverse(ans.begin(), ans.end());
-    for (int i = 0; i < ans.size(); ++i) {
-        if (!i) cerr << ans[i];
-        else cerr << "->" << ans[i];
+    for (int idx = record[point2pair(ed)]; idx != -1; idx = before_p[idx]) {
+        paths.push_back(arr[idx]);
+    }
+    reverse(paths.begin(), paths.end());
+    cerr << "找到经过" << paths.size() << "个点的路径";
+    for (int i = 0; i < paths.size(); ++i) {
+        if (!i) cerr << paths[i];
+        else cerr << "->" << paths[i];
     }
     cerr << endl;
-    cerr << "起点到终点的最短路径长度为：" << dp_dist[paths.size() - 1] << endl;
-    cerr << "起点到终点的欧式长度为：" << get_dist(st, ed) << endl;
+    cerr << "该条路径的长度为：" << min_dist << "，起点到终点的欧式距离为：" << get_dist(st, ed) << endl;
 }
 int main()
 {
@@ -210,11 +201,13 @@ int main()
     freopen("out.txt", "w", stdout);
     scanf("%d", &n);
     read(st); read(ed);
+    max_x = max(st.x, ed.x); max_y = max(st.y, ed.y); max_z = max(st.z, ed.z);
     for (int i = 0; i < n; ++i) {
         read(box->lb); read(box->ru);
     }
     //标记不可标记的点
     for (int r = 0; r < n; ++r) {
+        max_x = max(max_x, box[r].ru.x), max_y = max(max_y, box[r].ru.y), max_z = max(max_z, box[r].ru.z);
         for (int i = box[r].lb.x; i <= box[r].ru.x; ++i) {
             for (int j = box[r].lb.y; j <= box[r].ru.y; ++j) {
                 for (int k = box[r].lb.z; k <= box[r].ru.z; ++k) {
@@ -225,5 +218,5 @@ int main()
     }
     cerr << "出发点：" << st << endl;
     cerr << "终点：" << ed << endl;
-    calc_path();
+    getpath();
 }
