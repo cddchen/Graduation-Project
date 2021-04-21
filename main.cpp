@@ -34,7 +34,7 @@ struct point {
         return z < rhs.z;
     }
     friend ostream & operator <<(ostream & os,const point & p){
-        return os << "(" << p.x << ", " << p.y << " ," << p.z << ")";
+        return os << "(" << p.x << ", " << p.y << ", " << p.z << ")";
     }
 };
 double get_dist(point a, point b) {
@@ -105,7 +105,6 @@ bool check_segment_cross_obstacle(point P, point Q, int i) {
 }
 int check_segement_cross_all_obstacles(point s, point t) {
     for (int i = 0; i < n; ++i) {
-        cerr << s << ' ' << t << endl;
         if (check_segment_cross_obstacle(s, t - s, i))
             return i;
     }
@@ -202,6 +201,7 @@ namespace Astar {
         reverse(paths.begin(), paths.end());
         cerr << "找到经过" << paths.size() << "个点的路径";
         for (int i = 0; i < paths.size(); ++i) {
+            cout << paths[i] << endl;
             if (!i) cerr << paths[i];
             else cerr << "->" << paths[i];
         }
