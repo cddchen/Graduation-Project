@@ -15,7 +15,22 @@ const int update_end_cnt = 1;
 const int INF = 0x3f3f3f3f;
 //#define cerr cout
 //记录空间中的点
-
+struct point2D {
+    int x, y;
+    point2D() {}
+    point2D(int x, int y) : x(x), y(y) {}
+    bool operator ==(const point2D& rhs) const {
+        return x == rhs.x && y == rhs.y;
+    }
+    point2D operator -(const point2D& rhs) const {
+        return point2D(x - rhs.x, y - rhs.y);
+    }
+    bool operator <(const point2D& rhs) const  {
+        if (x != rhs.x)
+            return x < rhs.x;
+        return y < rhs.y;
+    }
+};
 struct point {
     int x, y, z;
     point() {}
@@ -46,14 +61,17 @@ int get_sqr_dist(point a, point b) {
 void read(point &t) {
     scanf("%d%d%d", &t.x, &t.y, &t.z);
 }
+void read(point2D &t) {
+    scanf("%d%d", &t.x, &t.y);
+}
 int n;
 int max_x, max_y, max_z;
 //立方体模型
 struct node {
-    point lb, ru;
-    friend ostream & operator <<(ostream & os,const node & p){
+    point2D vec[4];
+    /*friend ostream & operator <<(ostream & os,const node & p){
         return os << "[" << p.lb << ", " << p.ru << "]";
-    }
+    }*/
 } box[maxn];
 point st, ed;
 //判断线段与面相交，P+tQ的向量与第i个box相交判断
