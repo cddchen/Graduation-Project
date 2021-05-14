@@ -1,0 +1,21 @@
+1.ÊÊÓÃ TeX Live 2015 Èí¼þ»·¾³. °²×° TeX Live 2015 Ö®ºóÐèÒªÁ¢¼´¸üÐÂ.  
+  TeX Live °²×°¼°¸üÐÂ·½·¨£¬²Î¼û£ºhttp://aff.whu.edu.cn/huangzh/
+
+2.Ê¹ÓÃ XeLaTeX ±àÒë.
+
+3.Ö÷ÎÄµµÊÇ Bachelor-template.tex .
+
+4.Í¼Æ¬Çë·ÅÔÚ figures ÎÄ¼þ¼Ð.
+
+5.includefile ´æ·ÅµÄÊÇÓ¢ÎÄ·âÃæ¡¢ÖÐÓ¢ÎÄÕªÒª¡¢ÖÂÐ»µÈµÈÕýÎÄÒÔÍâµÄ²¿·Ö¡£
+  ÇëÖ±½ÓÔÚÕâÐ©ÎÄ¼þÖÐÌîÐ´Ïà¹ØÄÚÈÝ,²»Òª¸Ä±äÎÄ¼þµÄÎ»ÖÃ.
+
+6.¸ü¶àÊ¹ÓÃËµÃ÷Çë²Î¿´ Bachelor-template-BACK.pdf , ÒÔ¼°Ô´ÎÄ¼þ Bachelor-template.tex ÀïµÄ×¢ÊÍËµÃ÷.
+
+
+7.Ä£°åÏÂÔØ¸üÐÂµØÖ·:
+  http://aff.whu.edu.cn/huangzh/
+
+ 
+
+2016 Äê 05 ÔÂ 13 ÈÕ

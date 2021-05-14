@@ -57,13 +57,10 @@
   \thispagestyle{empty}%
   %\vspace*{-2cm}
   \begin{center}\leavevmode
-    {\heiti \zihao{5}%
-    \begin{tabular}{p{9cm}lp{3cm}l}
-  & \raisebox{-0.5ex}[0pt]{\makebox[1.5cm][s]{学\hfill 号}} & {}\hfill\raisebox{-0.5ex}[0pt]{\the\StudentNumber}\hfill{} & \\ \cline{3-3}
-  & \raisebox{-0.5ex}[0pt]{\makebox[1.5cm][s]{密\hfill 级}} & {}\hfill\raisebox{-0.5ex}[0pt]{\the\miji}\hfill{}   & \\ \cline{3-3}
-    \end{tabular}
-    }
-    \par
+    \begin{figure}
+      \centering
+      \includegraphics[]{figures/swpu_txt.png}
+    \end{figure}
     \vspace*{2.1cm} %插入空白
     {\songti \zihao{1} \makebox[9cm][s]{西南石油大学本科毕业论文}}\\
     \vspace{3.6cm}

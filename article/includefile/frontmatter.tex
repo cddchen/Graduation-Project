@@ -72,9 +72,9 @@
 
 %%======中文摘要===========================%
 \begin{cnabstract}
-本文主要介绍和讨论了武汉大学本科毕业论文的~\LaTeX~模板.
-指明了编译方法, 强调了公式排版的一些细节问题, 也指出了一些常见的排版错误.
-
+\par 在现实生活中的许多场景中，关于给定的某一起点出发到一终点的最短路径问题是极其普遍的，可以将问题抽象为二维空间或三维空间的最短路径问题，其中二维空间的最短路径问题已经拥有了成熟的适用于不同情况的最短路径算法，如单源最短路径算法中：Dijiktra算法拥有优越的时间和空间复杂度但适用于带正权图；Bellman-Ford算法不仅适用于正权图，也适用于负权图；基于Bellman-Ford算法改进的SPFA算法不仅适用于正负权值图，也拥有优越的平均时间复杂度；多源最短路径：Floyd算法可以计算出顶点到顶点之间的最短路径；
+\par 三维空间最短路径算法，基于离散化近似计算原理，将障碍物离散到指定精度下的格点网络中，再利用A*、SPFA算法计算出离散格点下的给定起点到终点的最短路径。由于计算的格点路径还可以进一步优化路径，因此再不断拟合格点路径为连续线段，最终算法将计算出起点到终点经过的线段路径和最短路径长度。基于给定精度计算最短路径长度，因此可以根据实际情况调整计算精度，在结果精度和计算时间和空间消耗之间取的最好的平衡。
+\par 通过分析可行算法和粗略解决思路，提出了将连续空间离散化成为格点的思路，再利用最短路径算法计算最短路径，最后拟合成为连续线段。在算法设计完成后进行了样例测试并针对测试结果进行进一步完善。最后，本算法成功解决了三维空间最短路径求解问题，至此，本算法的设计与实现工作顺利结束。
 
 
 \end{cnabstract}
@@ -84,14 +84,16 @@
 
 %%%%--  关键词 -----------------------------------------%%%%%%%%
 %%%%-- 注意: 每个关键词之间用“；”分开，最后一个关键词不打标点符号
-\cnkeywords{毕业论文; \LaTeX{}; 模板;  }
+\cnkeywords{毕业论文; 最短路径算法; 三维空间;  }
 
 
 %%====英文摘要==========================%
 
 
 \begin{enabstract}
-This thesis is a study on the theory of \dots.
+  \par In many real-life scenarios, the shortest path problem from a given origin to an end point is extremely common and can be abstracted as a two-dimensional or three-dimensional shortest path problem, where the two-dimensional shortest path problem has mature shortest path algorithms for different situations, such as the single-source shortest path algorithm: Dijiktra algorithm has The Bellman-Ford algorithm is applicable not only to positive-weighted graphs but also to negative-weighted graphs; the improved SPFA algorithm based on the Bellman-Ford algorithm is not only applicable to positive- and negative-weighted graphs but also has superior average time complexity; the multi-source shortest path: Floyd's algorithm can calculate the shortest path between The Floyd algorithm can calculate the shortest path from vertex to vertex;
+  \par The shortest path algorithm in 3D space is based on the principle of discretization approximation, which discretizes the obstacles into a network of lattice points with specified precision, and then uses A* and SPFA algorithms to calculate the shortest path from a given starting point to the end point under the discrete lattice points. Since the calculated grid point path can be further optimized, the grid point path is continuously fitted as a continuous line segment, and the final algorithm will calculate the line segment path and the shortest path length from the starting point to the end point. The shortest path length is calculated based on the given accuracy, so the calculation accuracy can be adjusted according to the actual situation to get the best balance between the result accuracy and the calculation time and space consumption.
+  \par By analyzing the feasible algorithms and approximation solutions, we propose the idea of discretizing the continuous space into lattice points, and then use the shortest path algorithm to calculate the shortest path and finally fit it into continuous line segments. After the algorithm was designed, a sample test was conducted and further improved based on the test results. Finally, the algorithm successfully solves the shortest path problem in three-dimensional space, and thus the design and implementation of the algorithm are successfully completed.
 
 \end{enabstract}
 \par
@@ -99,4 +101,4 @@ This thesis is a study on the theory of \dots.
 
 %%%%%-- Key words --------------------------------------%%%%%%%
 %%%%-- 注意: 每个关键词之间用“；”分开，最后一个关键词不打标点符号
- \enkeywords{\LaTeX{};  }
+ \enkeywords{Graduation Thesis; Shortest path algorithm;Three-dimensional space; }
