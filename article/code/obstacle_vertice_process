@@ -1,0 +1,38 @@
+struct node {
+    point2D vec[4];
+    double z0, z1;
+    /*friend ostream & operator <<(ostream & os,const node & p){
+        return os << "[" << p.lb << ", " << p.ru << "]";
+    }*/
+    process_data_node conveyByPrec(double precision) {
+        process_data_node node;
+        node.vec[0] = vec[0] / precision;
+        node.vec[1] = vec[1] / precision;
+        node.vec[2] = vec[2] / precision;
+        node.vec[3] = vec[3] / precision;
+        node.z0 = z0 / precision;
+        node.z1 = z1 / precision;
+        return node;
+    }
+    friend istream & operator >>(istream &in, node& p){
+        double x0, y0, x1, y1, d;
+        in >> x0 >> y0 >> x1 >> y1 >> d >> p.z0 >> p.z1;
+        //特判平行的状况
+        if (y0 == y1 || x0 == x1) {
+            p.vec[0] = {x0, y0 - d / 2};
+            p.vec[1] = {x1, y1 - d / 2};
+            p.vec[2] = {x1, y1 + d / 2};
+            p.vec[3] = {x0, y0 + d / 2};
+        }
+        else {
+            double k = (x1 - x0) / (y1 - y0);
+            double delta = (d / 2) / sqrt(1 + k * k);
+            
+            p.vec[0] = {x0 - delta, y0 + k * delta};
+            p.vec[1] = {x1 - delta, y1 + k * delta};
+            p.vec[2] = {x1 + delta, y1 - k * delta};
+            p.vec[3] = {x0 + delta, y0 - k * delta};
+        }
+        return in;
+    }
+};

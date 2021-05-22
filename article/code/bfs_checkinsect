@@ -1,0 +1,57 @@
+vector<point> path;
+double optimal_dist; bool optimal_dist_flg;
+
+vector<double> dp_dist;
+vector<int> tmp, tmp_pre;
+void getpath() {
+    if (!bfs()) {
+        cerr << "未找到路径！" << endl;
+        return;
+    }
+    cerr << "共找到" << ed_idxs.size() << "条路径！开始拟合..." << endl;
+    optimal_dist_flg = false;
+    for (int k = 0; k < ed_idxs.size(); ++k) {
+        int ed_idx = ed_idxs[k];
+        cerr << "正在拟合第" << k + 1 << "条路径..." << endl;
+        tmp.clear();
+        for (int idx = ed_idx; idx != -1; idx = pre[idx]) {
+            tmp.push_back(idx);
+        }
+        reverse(tmp.begin(), tmp.end());
+        dp_dist.clear();
+        dp_dist.resize(tmp.size());
+        tmp_pre.clear();
+        tmp_pre.resize(tmp.size());
+        for (int i = 0; i < tmp.size(); ++i) {
+            if (!i) dp_dist[i] = 0;
+            else dp_dist[i] = dp_dist[i - 1] + get_dist(q[tmp[i]], q[tmp[i - 1]]);
+            tmp_pre[i] = i - 1;
+            
+            for (int j = 0; j < i; ++j) {
+                if (check_segement_cross_all_obstacles(q[tmp[i]], q[tmp[j]]) == -1) {
+                    if (dp_dist[j] + get_dist(q[tmp[i]], q[tmp[j]]) < dp_dist[i]) {
+                        dp_dist[i] = dp_dist[j] + get_dist(q[tmp[i]], q[tmp[j]]);
+                        tmp_pre[i] = j;
+                    }
+                }
+            }
+        }
+        cerr << "拟合完毕，该条路径长度为：" << dp_dist[tmp.size() - 1] << endl;
+        if (!optimal_dist_flg || dp_dist[tmp.size() - 1] < optimal_dist) {
+            optimal_dist_flg = true;
+            optimal_dist = dp_dist[tmp.size() - 1];
+            path.clear();
+            for (int i = tmp.size() - 1; i != -1; i = tmp_pre[i]) {
+                path.push_back(q[tmp[i]]);
+            }
+            reverse(path.begin(), path.end());
+        }
+    }
+    cerr << "找到经过" << path.size() << "个点的路径";
+    for (int i = 0; i < path.size(); ++i) {
+        if (!i) cerr << path[i];
+        else cerr << "->" << path[i];
+    }
+    cerr << endl;
+    cerr << "该条路径的长度为：" << optimal_dist << "，起点到终点的欧式距离为：" << get_dist(st, ed) << endl;
+}

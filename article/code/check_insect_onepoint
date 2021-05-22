@@ -1,0 +1,9 @@
+//special judge one point situation
+if (R.x == 0 && R.y == 0) {
+    point2DInt E(P.x, P.y);
+    int tmp1 = ((box[1] - box[0]) * (E - box[0])) * ((box[3] - box[2]) * (E - box[2]));
+    int tmp2 = ((box[0] - box[3]) * (E - box[3])) * ((box[2] - box[1]) * (E - box[1]));
+    if (tmp1 >= 0 && tmp2 >= 0)
+        return true;
+    return false;
+}

@@ -1,0 +1,32 @@
+namespace Astar {
+    //define
+    struct heap_node {
+        double h, g;
+        int id;
+        heap_node() {}
+        heap_node(double _h, double _g, int _id) : h(_h), g(_g), id(_id) {}
+        bool operator <(const heap_node& rhs) const {
+            return h + g < rhs.h + rhs.g;
+        }
+        bool operator >(const heap_node& rhs) const {
+            return h + g > rhs.h + rhs.g;
+        }
+    };
+    priority_queue<heap_node, vector<heap_node>, greater<heap_node> > Q;
+    vector<pointInt> arr;
+    vector<double> dist;
+    vector<int> pre;
+    vector<pointInt> paths;
+    double min_dist;
+    map<pair<int, pair<int, int> >, int> record;
+    pair<int, pair<int, int> > point2pair(pointInt p) {
+        return make_pair(p.x, make_pair(p.y, p.z));
+    }
+    void __init__() {
+        arr.clear();
+        dist.clear();
+        pre.clear();
+        record.clear();
+        paths.clear();
+        while (Q.size()) Q.pop();
+    }

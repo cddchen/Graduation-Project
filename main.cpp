@@ -228,7 +228,9 @@ namespace Astar {
     }
 }
 namespace BFS {
+    //define
     int dist[maxn][maxn][maxn];
+    int dir[6][3] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
     bool set_dist(point p, point pre) {
         if (dist[p.x][p.y][p.z] > dist[pre.x][pre.y][pre.z] + 1) {
             dist[p.x][p.y][p.z] = dist[pre.x][pre.y][pre.z] + 1;
@@ -236,13 +238,11 @@ namespace BFS {
         }
         return false;
     }
-    point q[maxm];
-    int front, rear;
-    int pre[maxm], min_dist;
-    bool min_dist_flg;
+    point q[maxm]; int front, rear;
+    int pre[maxm], min_dist; bool min_dist_flg;
     vector<int> ed_idxs;
-    bool bfs() {
-        cerr << "正在搜索最短路径。。。" << endl;
+    //initial
+    void init() {
         memset(dist, 0x3f, sizeof(dist));
         dist[st.x][st.y][st.z] = 0;
         vis[st.x][st.y][st.z] = 1;
@@ -250,10 +250,11 @@ namespace BFS {
         q[++rear] = st; pre[0] = -1;
         min_dist_flg = false;
         ed_idxs.clear();
+    }
+    bool bfs() {
+        cerr << "正在搜索最短路径。。。" << endl;
         while (front <= rear) {
             point now = q[front++];
-            cerr << front << ' ' << now << endl;
-            vis[now.x][now.y][now.z] = 0;
             if (min_dist_flg && dist[now.x][now.y][now.z] > min_dist) continue;
             if (now == ed) {
                 if (!min_dist_flg || dist[now.x][now.y][now.z] <= min_dist) {
@@ -267,7 +268,7 @@ namespace BFS {
             for (int i = 0; i < 6; ++i) {
                 point nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
                 if (check_outofbound(nx)) continue;
-                if (vis[nx.x][nx.y][nx.z]) continue;
+                if (check_insideofobstacles(nx)) continue;
                 if (!set_dist(nx, now)) continue;
                 q[++rear] = nx;
                 vis[nx.x][nx.y][nx.z] = 1;

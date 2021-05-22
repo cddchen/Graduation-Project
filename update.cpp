@@ -9,6 +9,7 @@
 #include <queue>
 //#include "/Applications/Polyspace/R2020a/extern/include/engine.h"
 using namespace std;
+typedef long long ll;
 const int maxn = 1e3 + 5;
 const int maxm = 1e4 + 5;
 const int update_end_cnt = 1;
@@ -55,6 +56,9 @@ struct point2D {
         if (x != rhs.x)
             return x < rhs.x;
         return y < rhs.y;
+    }
+    friend ostream &operator <<(ostream &out, const point2D& rhs) {
+        return out << "(" << rhs.x << ", " << rhs.y << ")";
     }
 };
 
@@ -110,9 +114,9 @@ struct process_data_node {
 struct node {
     point2D vec[4];
     double z0, z1;
-    /*friend ostream & operator <<(ostream & os,const node & p){
-        return os << "[" << p.lb << ", " << p.ru << "]";
-    }*/
+    friend ostream &operator <<(ostream &out, const node& rhs) {
+        return out << "[" << rhs.vec[0] << ", " << rhs.vec[1] << ", " << rhs.vec[2] << ", " << rhs.vec[3] << "], (" << rhs.z0 << ", " << rhs.z1 << ")";
+    }
     process_data_node conveyByPrec(double precision) {
         process_data_node node;
         node.vec[0] = vec[0] / precision;
@@ -128,10 +132,10 @@ struct node {
         in >> x0 >> y0 >> x1 >> y1 >> d >> p.z0 >> p.z1;
         //特判平行的状况
         if (y0 == y1 || x0 == x1) {
-            p.vec[0] = {x0, y0 - d / 2};
-            p.vec[1] = {x1, y1 - d / 2};
-            p.vec[2] = {x1, y1 + d / 2};
-            p.vec[3] = {x0, y0 + d / 2};
+            p.vec[0] = {x0 - d / 2, y0};
+            p.vec[1] = {x0 + d / 2, y0};
+            p.vec[2] = {x1 + d / 2, y1};
+            p.vec[3] = {x1 - d / 2, y1};
         }
         else {
             double k = (x1 - x0) / (y1 - y0);
@@ -155,6 +159,7 @@ void read_data() {
     raw_boxs.resize(box_size);
     for (int i = 0; i < box_size; ++i) {
         cin >> raw_boxs[i];
+        cerr << raw_boxs[i] << endl;
     }
     cin >> precision;
 }
@@ -176,6 +181,13 @@ void process_data() {
     range_y = max(range_y, max(st.y, ed.y));
     range_z = max(range_z, max(st.z, ed.z));
     cerr << st << "->" << ed << endl;
+    
+    //output to file
+    cout << st << endl;
+    cout << ed << endl;
+    cout << boxs.size() << endl;
+    for (auto box : boxs)
+        cout << box << endl;
 }
 bool check_insect(pointInt P, pointInt Q, process_data_node box) {
     double t1 = 0.0, t2 = 1.0;
@@ -197,8 +209,8 @@ bool check_insect(pointInt P, pointInt Q, process_data_node box) {
     //special judge one point situation
     if (R.x == 0 && R.y == 0) {
         point2DInt E(P.x, P.y);
-        int tmp1 = ((box[1] - box[0]) * (E - box[0])) * ((box[3] - box[2]) * (E - box[2]));
-        int tmp2 = ((box[0] - box[3]) * (E - box[3])) * ((box[2] - box[1]) * (E - box[1]));
+        ll tmp1 = ((box[1] - box[0]) * (E - box[0])) * ((box[3] - box[2]) * (E - box[2]));
+        ll tmp2 = ((box[0] - box[3]) * (E - box[3])) * ((box[2] - box[1]) * (E - box[1]));
         if (tmp1 >= 0 && tmp2 >= 0)
             return true;
         return false;
@@ -239,7 +251,7 @@ bool check_insect(pointInt P, pointInt Q, process_data_node box) {
     a2 = 1.0 * (Q.y - P.y) * (box[2].x - box[1].x) - 1.0 * (Q.x - P.x) * (box[2].y - box[1].y);
     b2 = 1.0 * (P.y - box[1].y) * (box[2].x - box[1].x) - 1.0 * (P.x - box[1].x) * (box[2].y - box[1].y);
     delta = 1.0 * (a1 * b2 + a2 * b1) * (a1 * b2 + a2 * b1) - 4.0 * a1 * a2 * b1 * b2;
-    if (delta < 0 || a1 * a2 == 0) return false;
+    if (delta < 0) return false;
     if (a1 == 0 && a2 == 0) {
         if (b1 * b2 < 0)
             return false;
@@ -273,11 +285,7 @@ int check_all_insect(pointInt P, pointInt Q) {
 }
 int dir[6][3] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
 namespace Astar {
-    vector<pointInt> arr;
-    vector<double> dist;
-    vector<int> pre;
-    vector<pointInt> paths;
-    double min_dist;
+    //define
     struct heap_node {
         double h, g;
         int id;
@@ -290,11 +298,16 @@ namespace Astar {
             return h + g > rhs.h + rhs.g;
         }
     };
+    priority_queue<heap_node, vector<heap_node>, greater<heap_node> > Q;
+    vector<pointInt> arr;
+    vector<double> dist;
+    vector<int> pre;
+    vector<pointInt> paths;
+    double min_dist;
     map<pair<int, pair<int, int> >, int> record;
     pair<int, pair<int, int> > point2pair(pointInt p) {
         return make_pair(p.x, make_pair(p.y, p.z));
     }
-    priority_queue<heap_node, vector<heap_node>, greater<heap_node> > Q;
     void __init__() {
         arr.clear();
         dist.clear();
@@ -318,8 +331,10 @@ namespace Astar {
             }
             for (int i = 0; i < 6; ++i) { 
                 pointInt nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
+                //check_is_out_of_bound
                 if (nx.x < 0 || nx.y < 0 || nx.z < 0) continue;
                 if (nx.x > range_x + 1 || nx.y > range_y + 1 || nx.z > range_z + 1) continue;
+                //check_is_able_to_reach
                 if (check_all_insect(now, nx) != -1) continue;
                 if (record.count(point2pair(nx)) == 0) {
                     arr.push_back(nx);
@@ -345,10 +360,8 @@ namespace Astar {
                             isup = true;
                         }
                     }
-                    /*
-                    if (isup)
-                        Q.push({dist[id], get_dist(nx, ed), id});
-                    */
+                    //if (isup)
+                        //Q.push({dist[id], get_dist(nx, ed), id});
                 }
             }
         }
@@ -362,13 +375,18 @@ namespace Astar {
         reverse(paths.begin(), paths.end());
         cerr << "找到经过" << paths.size() << "个点的路径";
         for (int i = 0; i < paths.size(); ++i) {
-            cout << paths[i] << endl;
             if (!i) cerr << paths[i];
             else cerr << "->" << paths[i];
         }
         cerr << endl;
         cerr << "该条路径的长度为：" << min_dist << endl;
         cerr << "起点到终点的欧式距离为：" << get_dist(st, ed) << endl;
+        
+        
+        //output to file
+        cout << paths.size() << endl;
+        for (auto path : paths)
+            cout << path << endl;
         return true;
     }
     int __main_() {
@@ -384,10 +402,12 @@ namespace Astar {
 }
 int main()
 {
-    freopen("in1.txt", "r", stdin);
-    freopen("out1.txt", "w", stdout);
+    freopen("in3.txt", "r", stdin);
+    freopen("out3.txt", "w", stdout);
     read_data();
     process_data();
     Astar::__main_();
-    //cerr << check_all_insect(st, ed);
+    //pointInt p(3, 39, 3);
+    //pointInt q(3, 46, 2);
+    //cerr << check_all_insect(p, q);
 }

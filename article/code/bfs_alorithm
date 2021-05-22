@@ -1,0 +1,26 @@
+    bool bfs() {
+        cerr << "正在搜索最短路径。。。" << endl;
+        while (front <= rear) {
+            point now = q[front++];
+            if (min_dist_flg && dist[now.x][now.y][now.z] > min_dist) continue;
+            if (now == ed) {
+                if (!min_dist_flg || dist[now.x][now.y][now.z] <= min_dist) {
+                    min_dist_flg = true;
+                    min_dist = dist[now.x][now.y][now.z];
+                    ed_idxs.push_back(front - 1);
+                }
+                continue;
+            }
+            
+            for (int i = 0; i < 6; ++i) {
+                point nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
+                if (check_outofbound(nx)) continue;
+                if (check_insideofobstacles(nx)) continue;
+                if (!set_dist(nx, now)) continue;
+                q[++rear] = nx;
+                vis[nx.x][nx.y][nx.z] = 1;
+                pre[rear] = front - 1;
+            }
+        }
+        return ed_idxs.size() != 0;
+    }

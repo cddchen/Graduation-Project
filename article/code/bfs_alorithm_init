@@ -1,0 +1,24 @@
+namespace BFS {
+    //define
+    int dist[maxn][maxn][maxn];
+    int dir[6][3] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
+    bool set_dist(point p, point pre) {
+        if (dist[p.x][p.y][p.z] > dist[pre.x][pre.y][pre.z] + 1) {
+            dist[p.x][p.y][p.z] = dist[pre.x][pre.y][pre.z] + 1;
+            return true;
+        }
+        return false;
+    }
+    point q[maxm]; int front, rear;
+    int pre[maxm], min_dist; bool min_dist_flg;
+    vector<int> ed_idxs;
+    //initial
+    void init() {
+        memset(dist, 0x3f, sizeof(dist));
+        dist[st.x][st.y][st.z] = 0;
+        vis[st.x][st.y][st.z] = 1;
+        front = 0; rear = -1;
+        q[++rear] = st; pre[0] = -1;
+        min_dist_flg = false;
+        ed_idxs.clear();
+    }

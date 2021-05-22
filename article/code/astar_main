@@ -1,0 +1,79 @@
+    bool __build__() {
+        cerr << "A*算法搜索可达路径中。。。" << endl;
+        arr.push_back(st); Q.push({0, get_dist(st, ed), 0});
+        pre.push_back(-1); dist.push_back(0);
+        record[point2pair(st)] = 0;
+        while (!Q.empty()) {
+            heap_node top = Q.top(); Q.pop();
+            pointInt now = arr[top.id];
+            //cerr << top.h << " " << top.g << ": " << now << endl;
+            if (now == ed) {
+                min_dist = top.h;
+                return true;
+            }
+            for (int i = 0; i < 6; ++i) { 
+                pointInt nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
+                //check_is_out_of_bound
+                if (nx.x < 0 || nx.y < 0 || nx.z < 0) continue;
+                if (nx.x > range_x + 1 || nx.y > range_y + 1 || nx.z > range_z + 1) continue;
+                //check_is_able_to_reach
+                if (check_all_insect(now, nx) != -1) continue;
+                if (record.count(point2pair(nx)) == 0) {
+                    arr.push_back(nx);
+                    int id = arr.size() - 1;
+                    pre.push_back(top.id);
+                    dist.push_back(dist[top.id] + get_dist(now, nx));
+                    record[point2pair(nx)] = id;
+                    for (int pre_id = 0; pre_id < id; ++pre_id) {
+                        if (check_all_insect(arr[pre_id], nx) == -1) if (dist[pre_id] + get_dist(arr[pre_id], nx) < dist[id]) {
+                            dist[id] = dist[pre_id] + get_dist(arr[pre_id], nx);
+                            pre[id] = pre_id;
+                        }
+                    }
+                    Q.push({dist[id], get_dist(nx, ed), id});
+                }
+                else {
+                    int id = record[point2pair(nx)];
+                    bool isup = false;
+                    for (int preid = 0; preid < arr.size(); ++preid) if (preid != id && check_all_insect(arr[preid], arr[id]) == -1) {
+                        if (dist[preid] + get_dist(arr[preid], arr[id]) < dist[id]) {
+                            dist[id] = dist[preid] + get_dist(arr[preid], arr[id]);
+                            pre[id] = preid;
+                            isup = true;
+                        }
+                    }
+                    if (isup)
+                        Q.push({dist[id], get_dist(nx, ed), id});
+                }
+            }
+        }
+        return false;
+    }
+    bool __process__() {
+        int ed_idx = record[point2pair(ed)];
+        for (int i = ed_idx; i != -1; i = pre[i]) {
+            paths.push_back(arr[i]);
+        }
+        reverse(paths.begin(), paths.end());
+        cerr << "找到经过" << paths.size() << "个点的路径";
+        for (int i = 0; i < paths.size(); ++i) {
+            cout << paths[i] << endl;
+            if (!i) cerr << paths[i];
+            else cerr << "->" << paths[i];
+        }
+        cerr << endl;
+        cerr << "该条路径的长度为：" << min_dist << endl;
+        cerr << "起点到终点的欧式距离为：" << get_dist(st, ed) << endl;
+        return true;
+    }
+    int __main_() {
+        __init__();
+        bool build_flg = __build__();
+        if (!build_flg) {
+            cerr << "未找到从" << st << "到" << ed << "的有效路径！" << endl;
+            return 0;
+        }
+        __process__();
+        return 1;
+    }
+}

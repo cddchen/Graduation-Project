@@ -1,0 +1,17 @@
+bool check_insect(pointInt P, pointInt Q, process_data_node box) {
+    double t1 = 0.0, t2 = 1.0;
+    pointInt R = Q - P;
+    //check the k of z-axis
+    if (R.z == 0) {
+        if (!(box.z0 <= P.z && P.z <= box.z1))
+            return false;
+    }
+    else {
+        double tmp1 = 1.0 * (box.z0 - P.z) / R.z;
+        double tmp2 = 1.0 * (box.z1 - P.z) / R.z;
+        if (R.z < 0) swap(tmp1, tmp2);
+        t1 = max(t1, tmp1);
+        t2 = min(t2, tmp2);
+    }
+    if (t1 > t2) 
+        return false;

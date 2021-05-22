@@ -34,7 +34,7 @@
 \newtoks\Csupervisor     %指导教师中文名
 \newtoks\Eschoolname      %学院英文名
 \newtoks\Cschoolname      %学院中文名
-
+\newtoks\Grade
 
 
 \pagestyle{fancyplain}
@@ -57,26 +57,29 @@
   \thispagestyle{empty}%
   %\vspace*{-2cm}
   \begin{center}\leavevmode
-    \begin{figure}
-      \centering
-      \includegraphics[]{figures/swpu_txt.png}
-    \end{figure}
-    \vspace*{2.1cm} %插入空白
-    {\songti \zihao{1} \makebox[9cm][s]{西南石油大学本科毕业论文}}\\
-    \vspace{3.6cm}
-    {\heiti \zihao{2} \@title \par}%
+    \includegraphics[width=10cm]{figures/swpu_txt.png}
+    \par
+    \vspace*{1cm} %插入空白
+    \textbf{\songti\fontsize{40}{20}{本科毕业设计（论文）}}\\
+    \vspace{1cm}
+    \centering
+    \includegraphics[width=5cm]{figures/swpu.png}
+    \par
+    \vspace*{1cm}
+    {\heiti\large \zihao{2} \@title \par}%
 %    \vspace{4cm}
-     \vfill\vfill\vfill
+     \vfill\vfill
     {\songti\zihao{-3}
     \begin{tabular}{cp{5cm}c}
       \raisebox{-3ex}[0pt]{\makebox[3.5cm][s]{院\hfill (系)\hfill 名\hfill 称：}} & {  {}\raisebox{-3ex}[0pt]{\the\Cschoolname}\hfill{}} & \\[3ex]
       \raisebox{-3ex}[0pt]{\makebox[3.5cm][s]{专\hfill 业\hfill 名\hfill 称：}} & { {}\raisebox{-3ex}[0pt]{\the\Cmajor}\hfill{}} & \\[3ex]
       \raisebox{-3ex}[0pt]{\makebox[3.5cm][s]{学\hfill 生\hfill 姓\hfill 名：}} & { {}\raisebox{-3ex}[0pt]{\@author}\hfill{}} & \\[3ex]
+      \raisebox{-3ex}[0pt]{\makebox[3.5cm][s]{学\hfill\hfill\hfill 号：}} & { {}\raisebox{-3ex}[0pt]{\the\StudentNumber}\hfill{}} & \\[3ex]
       \raisebox{-3ex}[0pt]{\makebox[3.5cm][s]{指\hfill 导\hfill 教\hfill 师：}} & { {}\raisebox{-3ex}[0pt]{\the\Csupervisor}\hfill{}} & \\[3ex]
      \end{tabular}
     }
     \par
-    \vspace{2.6cm}
+    \vspace{1.5cm}
     {
     {\songti \zihao{3} \@date \par}%
     }
@@ -116,6 +119,13 @@
 %\RequirePackage{mathrsfs}   % 不同于\mathcal or \mathfrak 之类的英文花体字体
 \RequirePackage{url}
 \RequirePackage{enumerate}
+\RequirePackage{algorithm}
+\RequirePackage{algorithmic}
+\RequirePackage{listings}
+\RequirePackage{fontspec}
+\RequirePackage{multirow}
+\RequirePackage[section]{placeins}
+\RequirePackage{longtable}
 %%----------------------- Theorems -----------------------------------
 \theoremstyle{plain}
 \theoremheaderfont{\heiti}
@@ -217,11 +227,45 @@
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
 
+%%% ---- 代码设置 ---- %%%%
+\newfontfamily\menlo{Menlo}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\lstset{
+    backgroundcolor     =   \color{white},
+    basicstyle          =   \sffamily,          % 基本代码风格
+    keywordstyle        =   \color{blue},          % 关键字风格
+    commentstyle        =   \color{mygreen},  % 注释的风格，斜体
+    stringstyle         =   \color{mymauve}\ttfamily,  % 字符串风格
+    flexiblecolumns,                % 别问为什么，加上这个
+    numbers             =   left,   % 行号的位置在左边
+    showspaces          =   false,  % 是否显示空格，显示了有点乱，所以不现实了
+    numberstyle         =   \zihao{-5}\ttfamily,    % 行号的样式，小五号，tt等宽字体
+    showstringspaces    =   false,
+    captionpos          =   b,      % 这段代码的名字所呈现的位置，t指的是top上面
+    frame               =   lrtb,   % 显示边框
+    columns             =   fullflexible,
+    tabsize             =   4,
+    breaklines          =   true, 
+    rulesepcolor        =   \color{red!20!green!20!blue!20}
+}
+
+\lstdefinestyle{C++}{
+    language        =   C++, % 语言
+    basicstyle      =   \zihao{-5}\ttfamily,
+    numberstyle     =   \zihao{-5}\ttfamily,
+    breaklines      =   true,   % 自动换行，建议不要写太长的行
+    columns         =   fixed,  % 如果不加这一句，字间距就不固定，很丑，必须加
+    basewidth       =   0.5em,
+}
+
 %%% ---- 图表标题设置 ----- %%%%
 \RequirePackage[labelsep=quad]{caption} %% 序号之后空一格写标题
 \captionsetup[table]{textfont=bf}  %%设置表格标题字体为黑体  。2016.06.07
 \renewcommand\figurename{\zihao{-4} 图}
 \renewcommand\tablename{\bf\zihao{-4} 表} 
+\renewcommand*\lstlistingname{\bf\zihao{-4} 代码}
 
 %%% ------ 目录设置 ------- %%%%
 \ctexset{contentsname={目\qquad 录}}
