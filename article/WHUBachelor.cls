@@ -126,6 +126,7 @@
 \RequirePackage{multirow}
 \RequirePackage[section]{placeins}
 \RequirePackage{longtable}
+\RequirePackage{booktabs}
 %%----------------------- Theorems -----------------------------------
 \theoremstyle{plain}
 \theoremheaderfont{\heiti}
