@@ -21,8 +21,32 @@
  \else
 \hypersetup{citecolor=magenta,linkcolor=blue}
 \fi
-\RequirePackage[top=2.7truecm,bottom=2.2truecm,left=3truecm,right=3truecm,includefoot,xetex]{geometry}    % 页面设置%
+\RequirePackage[top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm,includefoot,xetex]{geometry}    % 页面设置%
+\pagestyle{fancyplain}
+\fancyhf{}  %清除以前对页眉页脚的设置
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{-\,\thepage\,-}
 
+
+\fancypagestyle{plain}
+{
+\fancyhead{}                                    % clear all header fields
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot{}                                    % clear all footer fields
+\fancyfoot[C]{-\,\thepage\,-}
+}
+% 行距
+\RequirePackage{setspace}
+\linespread{1.25}
+% 图文间距
+\setlength\textfloatsep{10pt}
+\setlength\abovecaptionskip{8pt}
+\setlength\belowcaptionskip{6pt}
+% 设置深度
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{3}
+
+%value
 \newtoks\StudentNumber       %学号
 \newtoks\miji            %密级
 \newtoks\Cmajor          %学科专业中文名
@@ -37,19 +61,6 @@
 \newtoks\Grade
 
 
-\pagestyle{fancyplain}
-\fancyhf{}  %清除以前对页眉页脚的设置
-\renewcommand{\headrulewidth}{0pt}
-\fancyfoot[C]{-\,\thepage\,-}
-
-
-\fancypagestyle{plain}
-{
-\fancyhead{}                                    % clear all header fields
-\renewcommand{\headrulewidth}{0pt}
-\fancyfoot{}                                    % clear all footer fields
-\fancyfoot[C]{-\,\thepage\,-}
-}
 
 %%=====封面===================== 
 \def\maketitle{%
@@ -90,26 +101,19 @@
   }
 
 %------------------------ Abstract & Keywords -------------------------
-\newcommand\cnabstractname{摘要} 
-\newcommand\enabstractname{ABSTRACT}
-\newcommand\cnkeywords[1]{ {\noindent\heiti\zihao{-4}\cnkeywordsname: }#1}
-\newcommand\cnkeywordsname{关键词}
-\newcommand\enkeywords[1]{ {\noindent\bfseries\zihao{-4}\enkeywordsname: }#1}
-\newcommand\enkeywordsname{Key words}
-
-\newenvironment{cnabstract}{
-    \newpage
-\chapter[\cnabstractname]{\ziju{2}{\cnabstractname}}   %%%终于解决了书签乱码的问题 2005-04-12.huangzh
-    \songti\zihao{-4}
-    \@afterheading}
-    {\par}
-
-\newenvironment{enabstract}{
-    \newpage
-    \chapter[\enabstractname]{\enabstractname}
-    \songti\zihao{-4}
-    \@afterheading}
-    {\par}
+\newcommand{\abstractofcn}[2]
+{
+  {\chapter*{\zihao{3}\songti\bf 摘要}}
+  \zihao{-4}\songti{#1}\\
+  {\zihao{-4}\songti\bf{关键词：}}\zihao{-4}\songti #2
+}
+\newcommand{\abstractofen}[2]
+{
+  {\chapter*{\zihao{3}\bf{Abstract}}}
+  {\zihao{-4} #1}\\
+  {\zihao{-4}\bf{Key words:}} \zihao{-4} #2
+}
+  
 
 %%------------------------常用宏包-----------------------------------
 \RequirePackage{amsmath,amssymb}
@@ -120,13 +124,15 @@
 \RequirePackage{url}
 \RequirePackage{enumerate}
 \RequirePackage{algorithm}
-\RequirePackage{algorithmic}
+\RequirePackage{algpseudocode}
 \RequirePackage{listings}
 \RequirePackage{fontspec}
 \RequirePackage{multirow}
 \RequirePackage[section]{placeins}
 \RequirePackage{longtable}
 \RequirePackage{booktabs}
+\RequirePackage{titletoc}
+\RequirePackage{listings}
 %%----------------------- Theorems -----------------------------------
 \theoremstyle{plain}
 \theoremheaderfont{\heiti}
@@ -152,6 +158,11 @@
 
 
 \newcommand{\upcite}[1]{\textsuperscript{\cite{#1}}}  %自定义新命令\upcite, 使参考文献引用以上标出现
+
+% 引用编号
+\renewcommand{\thetable}{\arabic{section}.\arabic{table}}
+\renewcommand{\thefigure}{\arabic{section}.\arabic{figure}}
+\renewcommand{\theequation}{\arabic{section}.\arabic{equation}}
 
 %%%%%%%-------------------------------------------------
 %%%===  suppress extra inter-line spacing in \list environments
@@ -216,19 +227,41 @@
 
 \makeatother
 %---------------------------------------------------
-\newcommand\acknowledgement{\chapter*{\ziju{2}致谢}}
+\newcommand\acknowledgement
+{\newpage
+\addcontentsline{toc}{section}{致谢}
+\chapter*{致谢}
+}
 
-%%% ---- 章节标题设置 ----- %%%%
-\ctexset{chapter={format+={\zihao{-2}},%
-               number={\zihao{-2}\arabic{chapter}},name={,},afterskip={30pt},beforeskip={20pt}}}
-\ctexset{section={format+={\zihao{4}\raggedright}}}
-\ctexset{subsection={format+={\zihao{-4}\raggedright}}}
-\ctexset{subsubsection={format={\zihao{-4}\bf\raggedright}}}
+%%% ---- 目录设置 ----- %%%%
+\renewcommand{\contentsname}{\bf \songti \zihao{3} \hspace*{\fill}目\quad 录\hspace*{\fill} \vspace{5pt}}
+% 一级标题：顶格、宋体、三号)
+\titlecontents{section}[0em]
+{\color{black}\zihao{-4}\songti \addvspace{0.5ex}}
+{\thecontentslabel\hspace*{1em}} {}
+{\titlerule*[0.4pc]{.}\contentspage}
+% 二级标题：右缩两个汉字空格、宋体、小三号
+\titlecontents{subsection}[2em]
+{\color{black}\zihao{-4}\songti \addvspace{0.5ex}}
+{\thecontentslabel\hspace*{1em}} {\hspace*{-2.3em}}
+{\titlerule*[0.4pc]{.}\contentspage}
+% 三级标题：右缩四个汉字空格、宋体、四号
+\titlecontents{subsubsection}[4em] 
+{\color{black}\zihao{-4}\songti \addvspace{0.5ex}}
+{\thecontentslabel\hspace*{1em}} {\hspace*{-2.3em}}
+{\titlerule*[0.4pc]{.}\contentspage}
 
-\setcounter{tocdepth}{4}
-\setcounter{secnumdepth}{4}
+%%% ---- 章节设置 ----- %%%%
+\ctexset{chapter={format+={\bf\zihao{3}\songti},number={},name={,},afterskip={17pt},beforeskip={16.5pt}}}
+\ctexset{section={format+={\bf\zihao{3}\songti\raggedright},number={\arabic{section}},afterskip={17pt},beforeskip={16.5pt}}}
+\ctexset{subsection={format+={\bf\zihao{-3}\songti\raggedright},number={\arabic{section}.\arabic{subsection}},afterskip={13pt},beforeskip={13pt}}}
+\ctexset{subsubsection={format+={\bf\zihao{4}\songti\raggedright},number={\arabic{section}.\arabic{subsection}.\arabic{subsubsection}},afterskip={6pt},beforeskip={6pt}}}
 
 %%% ---- 代码设置 ---- %%%%
+
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}
+\renewcommand{\algorithmicensure}{\textbf{输出:}}
+\floatname{algorithm}{算法}
 \newfontfamily\menlo{Menlo}
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
@@ -261,20 +294,23 @@
     basewidth       =   0.5em,
 }
 
+
 %%% ---- 图表标题设置 ----- %%%%
 \RequirePackage[labelsep=quad]{caption} %% 序号之后空一格写标题
-\captionsetup[table]{textfont=bf}  %%设置表格标题字体为黑体  。2016.06.07
-\renewcommand\figurename{\zihao{-4} 图}
-\renewcommand\tablename{\bf\zihao{-4} 表} 
-\renewcommand*\lstlistingname{\bf\zihao{-4} 代码}
+\captionsetup[table]{font={small,bf}}  %%设置表格标题字体为黑体  。2016.06.07
+\captionsetup[figure]{font={small,bf}}
+\captionsetup[lstlisting]{font={small,bf}}
+\renewcommand\figurename{\bf\zihao{5} 图}
+\renewcommand\tablename{\bf\zihao{5} 表} 
+\renewcommand\lstlistingname{\bf\zihao{5} 代码}
 
 %%% ------ 目录设置 ------- %%%%
-\ctexset{contentsname={目\qquad 录}}
+%\ctexset{contentsname={目\qquad 录}}
  
-\RequirePackage{tocloft} 
-\renewcommand\cftchapfont{\zihao{4}\bf}
-\renewcommand\cfttoctitlefont{\hfill\zihao{-2}\bf}
-\renewcommand\cftaftertoctitle{\hfill}
+%\RequirePackage{tocloft} 
+%\renewcommand\cftchapfont{\zihao{4}\bf}
+%\renewcommand\cfttoctitlefont{\hfill\zihao{-2}\bf}
+%\renewcommand\cftaftertoctitle{\hfill}
  
 %%===参考文献===%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliographystyle{abbrv}        % 参考文献样式,  plain,unsrt,alpha,abbrv,chinesebst 等等

@@ -1,9 +1,9 @@
 struct node {
     point2D vec[4];
     double z0, z1;
-    /*friend ostream & operator <<(ostream & os,const node & p){
-        return os << "[" << p.lb << ", " << p.ru << "]";
-    }*/
+    friend ostream &operator <<(ostream &out, const node& rhs) {
+        return out << "[" << rhs.vec[0] << ", " << rhs.vec[1] << ", " << rhs.vec[2] << ", " << rhs.vec[3] << "], (" << rhs.z0 << ", " << rhs.z1 << ")";
+    }
     process_data_node conveyByPrec(double precision) {
         process_data_node node;
         node.vec[0] = vec[0] / precision;
@@ -19,10 +19,10 @@ struct node {
         in >> x0 >> y0 >> x1 >> y1 >> d >> p.z0 >> p.z1;
         //特判平行的状况
         if (y0 == y1 || x0 == x1) {
-            p.vec[0] = {x0, y0 - d / 2};
-            p.vec[1] = {x1, y1 - d / 2};
-            p.vec[2] = {x1, y1 + d / 2};
-            p.vec[3] = {x0, y0 + d / 2};
+            p.vec[0] = {x0 - d / 2, y0};
+            p.vec[1] = {x0 + d / 2, y0};
+            p.vec[2] = {x1 + d / 2, y1};
+            p.vec[3] = {x1 - d / 2, y1};
         }
         else {
             double k = (x1 - x0) / (y1 - y0);

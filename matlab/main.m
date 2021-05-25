@@ -8,7 +8,7 @@ path_size = 0;
 x = [];
 y = [];
 z = [];
-fidin = fopen('../out1.txt');
+fidin = fopen('../out4.txt');
 while ~feof(fidin)
     tline = fgetl(fidin);
     if cnt == 0

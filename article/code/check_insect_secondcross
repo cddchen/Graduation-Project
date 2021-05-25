@@ -4,7 +4,7 @@ b1 = 1.0 * (P.y - box[3].y) * (box[0].x - box[3].x) - 1.0 * (P.x - box[3].x) * (
 a2 = 1.0 * (Q.y - P.y) * (box[2].x - box[1].x) - 1.0 * (Q.x - P.x) * (box[2].y - box[1].y);
 b2 = 1.0 * (P.y - box[1].y) * (box[2].x - box[1].x) - 1.0 * (P.x - box[1].x) * (box[2].y - box[1].y);
 delta = 1.0 * (a1 * b2 + a2 * b1) * (a1 * b2 + a2 * b1) - 4.0 * a1 * a2 * b1 * b2;
-if (delta < 0 || a1 * a2 == 0) return false;
+if (delta < 0) return false;
 if (a1 == 0 && a2 == 0) {
     if (b1 * b2 < 0)
         return false;

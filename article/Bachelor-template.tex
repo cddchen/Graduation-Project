@@ -4,6 +4,7 @@
 \documentclass[forprint]{WHUBachelor}
 
 \begin{document}
+\renewcommand{\thelstlisting}{\arabic{section}.\arabic{lstlisting}}
 %%%%%%% 下面的内容, 据实填空.
 
 \miji{ }                                      % 密级. 没有就空着.
@@ -14,7 +15,7 @@
 \author{陈东} % 作者名字
 \Eauthor{Chen dong}            %作者英文名
 \Csupervisor{刘小玲\quad 讲师}        %指导教师中文名、职称
-\Esupervisor{Prof.~Liu Xiao Ling} %指导教师英文名、职称
+\Esupervisor{Liu Xiao Ling} %指导教师英文名、职称
 \Grade{2017}
 \Cmajor{软件工程}                  % 专业中文名
 \Emajor{Software Engineering}% 专业英文名
@@ -31,7 +32,7 @@
 %-----------------------------------------------------------------------------
 \include{includefile/frontmatter}    % 加入摘要, 申明.
 %==========================把目录加入到书签==============================%%%%%%
-\pdfbookmark[0]{目录}{toc}
+%\pdfbookmark[0]{目录}{toc}
 \tableofcontents
 \mainmatter %% 以下是正文
 %%%%%%%%%%%%%%%%%%%%%%%%%%%--------main matter-------%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -48,5 +49,5 @@
 
 \include{includefile/backmatter} %%%致谢
 
-\cleardoublepage
+\clearpage
 \end{document}

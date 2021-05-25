@@ -9,18 +9,45 @@
 #include <queue>
 //#include "/Applications/Polyspace/R2020a/extern/include/engine.h"
 using namespace std;
+typedef long long ll;
 const int maxn = 1e3 + 5;
 const int maxm = 1e4 + 5;
 const int update_end_cnt = 1;
 const int INF = 0x3f3f3f3f;
+const double eps = 1e-5;
 //#define cerr cout
 //记录空间中的点
-struct point2D {
+struct point2DInt {
     int x, y;
+    point2DInt() {}
+    point2DInt(int x, int y) : x(x), y(y) {}
+    bool operator ==(const point2DInt& rhs) const {
+        return x == rhs.x && y == rhs.y;
+    }
+    point2DInt operator -(const point2DInt& rhs) const {
+        return point2DInt(x - rhs.x, y - rhs.y);
+    }
+    int operator *(const point2DInt& rhs) const {
+        return x * rhs.y - rhs.x * y;
+    }
+    bool operator <(const point2DInt& rhs) const  {
+        if (x != rhs.x)
+            return x < rhs.x;
+        return y < rhs.y;
+    }
+    friend ostream &operator <<(ostream &out, const point2DInt& rhs) {
+        return out << "(" << rhs.x << ", " << rhs.y << ")";
+    }
+};
+struct point2D {
+    double x, y;
     point2D() {}
-    point2D(int x, int y) : x(x), y(y) {}
+    point2D(double x, double y) : x(x), y(y) {}
     bool operator ==(const point2D& rhs) const {
         return x == rhs.x && y == rhs.y;
+    }
+    point2DInt operator /(double precision) const {
+        return point2DInt(x / precision, y / precision);
     }
     point2D operator -(const point2D& rhs) const {
         return point2D(x - rhs.x, y - rhs.y);
@@ -30,124 +57,238 @@ struct point2D {
             return x < rhs.x;
         return y < rhs.y;
     }
+    friend ostream &operator <<(ostream &out, const point2D& rhs) {
+        return out << "(" << rhs.x << ", " << rhs.y << ")";
+    }
 };
-struct point {
+
+
+struct pointInt {
     int x, y, z;
-    point() {}
-    point(int x, int y, int z) : x(x), y(y), z(z) {}
-    bool operator ==(const point& rhs) const {
+    pointInt() {}
+    pointInt(int x, int y, int z) : x(x), y(y), z(z) {}
+    bool operator ==(const pointInt& rhs) const {
         return x == rhs.x && y == rhs.y && z == rhs.z;
     }
-    point operator -(const point& rhs) const {
-        return point(x - rhs.x, y - rhs.y, z - rhs.z);
+    pointInt operator -(const pointInt& rhs) const {
+        return pointInt(x - rhs.x, y - rhs.y, z - rhs.z);
     }
-    bool operator <(const point& rhs) const  {
+    bool operator <(const pointInt& rhs) const  {
         if (x != rhs.x)
             return x < rhs.x;
         if (y != rhs.y)
             return y < rhs.y;
         return z < rhs.z;
     }
-    friend ostream & operator <<(ostream & os,const point & p){
+    friend ostream & operator <<(ostream & os,const pointInt & p){
         return os << "(" << p.x << ", " << p.y << ", " << p.z << ")";
     }
 };
-double get_dist(point a, point b) {
+struct pointDB {
+    double x, y, z;
+    pointDB() { }
+    pointDB(double _x, double _y, double _z) : x(_x), y(_y), z(_z) { }
+    friend istream & operator >>(istream &in, pointDB& p){
+        in >> p.x >> p.y >> p.z;
+        return in;
+    }
+    pointInt conveyByPrec(double precision) {
+        return pointInt(x / precision, y / precision, z / precision);
+    }
+};
+double get_dist(pointInt a, pointInt b) {
     return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
 }
-int get_sqr_dist(point a, point b) {
-    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
+double get_dist(pointDB a, pointDB b) {
+    return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
 }
-void read(point &t) {
-    scanf("%d%d%d", &t.x, &t.y, &t.z);
-}
-void read(point2D &t) {
-    scanf("%d%d", &t.x, &t.y);
-}
-int n;
-int max_x, max_y, max_z;
-//立方体模型
+
+struct process_data_node {
+    point2DInt vec[4];
+    int z0, z1;
+    point2DInt& operator[](int i) {
+        return vec[i];
+    }
+    friend ostream &operator <<(ostream &out, const process_data_node& rhs) {
+        return out << "[" << rhs.vec[0] << ", " << rhs.vec[1] << ", " << rhs.vec[2] << ", " << rhs.vec[3] << "], (" << rhs.z0 << ", " << rhs.z1 << ")";
+    }
+};
+//原始数据
 struct node {
     point2D vec[4];
-    /*friend ostream & operator <<(ostream & os,const node & p){
-        return os << "[" << p.lb << ", " << p.ru << "]";
-    }*/
-} box[maxn];
-point st, ed;
-//判断线段与面相交，P+tQ的向量与第i个box相交判断
-bool check_segment_cross_obstacle(point P, point Q, int i) {
-    int L = box[i].lb.x, R = box[i].ru.x;
+    double z0, z1;
+    friend ostream &operator <<(ostream &out, const node& rhs) {
+        return out << "[" << rhs.vec[0] << ", " << rhs.vec[1] << ", " << rhs.vec[2] << ", " << rhs.vec[3] << "], (" << rhs.z0 << ", " << rhs.z1 << ")";
+    }
+    process_data_node conveyByPrec(double precision) {
+        process_data_node node;
+        node.vec[0] = vec[0] / precision;
+        node.vec[1] = vec[1] / precision;
+        node.vec[2] = vec[2] / precision;
+        node.vec[3] = vec[3] / precision;
+        node.z0 = z0 / precision;
+        node.z1 = z1 / precision;
+        return node;
+    }
+    friend istream & operator >>(istream &in, node& p){
+        double x0, y0, x1, y1, d;
+        in >> x0 >> y0 >> x1 >> y1 >> d >> p.z0 >> p.z1;
+        //特判平行的状况
+        if (y0 == y1 || x0 == x1) {
+            p.vec[0] = {x0 - d / 2, y0};
+            p.vec[1] = {x0 + d / 2, y0};
+            p.vec[2] = {x1 + d / 2, y1};
+            p.vec[3] = {x1 - d / 2, y1};
+        }
+        else {
+            double k = (x1 - x0) / (y1 - y0);
+            double delta = (d / 2) / sqrt(1 + k * k);
+            
+            p.vec[0] = {x0 - delta, y0 + k * delta};
+            p.vec[1] = {x1 - delta, y1 + k * delta};
+            p.vec[2] = {x1 + delta, y1 - k * delta};
+            p.vec[3] = {x0 + delta, y0 - k * delta};
+        }
+        return in;
+    }
+};
+vector<node> raw_boxs;
+int box_size;
+pointDB raw_st, raw_out;
+double precision;
+void read_data() {
+    cin >> raw_st >> raw_out;
+    cin >> box_size;
+    raw_boxs.resize(box_size);
+    for (int i = 0; i < box_size; ++i) {
+        cin >> raw_boxs[i];
+        cerr << raw_boxs[i] << endl;
+    }
+    cin >> precision;
+}
+pointInt st, ed;
+vector<process_data_node> boxs;
+int range_x = 0, range_y = 0, range_z = 0;
+void process_data() {
+    st = raw_st.conveyByPrec(precision);
+    ed = raw_out.conveyByPrec(precision);
+    boxs.clear();
+    for (auto box : raw_boxs) {
+        boxs.push_back(box.conveyByPrec(precision));
+        process_data_node& the = boxs.back();
+        range_x = max(range_x, max(the[0].x, max(the[1].x, max(the[2].x, the[3].x))));
+        range_y = max(range_y, max(the[0].y, max(the[1].y, max(the[2].y, the[3].y))));
+        range_z = max(range_z, the.z1);
+    }
+    range_x = max(range_x, max(st.x, ed.x));
+    range_y = max(range_y, max(st.y, ed.y));
+    range_z = max(range_z, max(st.z, ed.z));
+    cerr << st << "->" << ed << endl;
+    
+    //output to file
+    cout << st << endl;
+    cout << ed << endl;
+    cout << boxs.size() << endl;
+    for (auto box : boxs)
+        cout << box << endl;
+}
+bool check_insect(pointInt P, pointInt Q, process_data_node box) {
     double t1 = 0.0, t2 = 1.0;
-    //cerr << "vector " << P << "->" << Q << "insect judge with box" << box[i] << endl;
-    if (Q.x == 0) {
-        if (!(L <= P.x && P.x <= R))
+    pointInt R = Q - P;
+    //check the k of z-axis
+    if (R.z == 0) {
+        if (!(box.z0 <= P.z && P.z <= box.z1))
             return false;
     }
     else {
-        double tmp1 = 1.0 * (L - P.x) / Q.x;
-        double tmp2 = 1.0 * (R - P.x) / Q.x;
-        if (Q.x < 0) swap(tmp1, tmp2);
+        double tmp1 = 1.0 * (box.z0 - P.z) / R.z;
+        double tmp2 = 1.0 * (box.z1 - P.z) / R.z;
+        if (R.z < 0) swap(tmp1, tmp2);
         t1 = max(t1, tmp1);
         t2 = min(t2, tmp2);
     }
-    
-    L = box[i].lb.y, R = box[i].ru.y;
-    if (Q.y == 0) {
-        if (!(L<= P.y && P.y <= R))
+    if (t1 > t2) 
+        return false;
+    //special judge one point situation
+    if (R.x == 0 && R.y == 0) {
+        point2DInt E(P.x, P.y);
+        ll tmp1 = ((box[1] - box[0]) * (E - box[0])) * ((box[3] - box[2]) * (E - box[2]));
+        ll tmp2 = ((box[0] - box[3]) * (E - box[3])) * ((box[2] - box[1]) * (E - box[1]));
+        if (tmp1 >= 0 && tmp2 >= 0)
+            return true;
+        return false;
+    }
+    //judge ABxAE*CDxCE>=0
+    double a1 = 1.0 * (Q.y - P.y) * (box[1].x - box[0].x) - 1.0 * (Q.x - P.x) * (box[1].y - box[0].y);
+    double b1 = 1.0 * (P.y - box[0].y) * (box[1].x - box[0].x) - 1.0 * (P.x - box[0].x) * (box[1].y - box[0].y);
+    double a2 = 1.0 * (Q.y - P.y) * (box[3].x - box[2].x) - 1.0 * (Q.x - P.x) * (box[3].y - box[2].y);
+    double b2 = 1.0 * (P.y - box[2].y) * (box[3].x - box[2].x) - 1.0 * (P.x - box[2].x) * (box[3].y - box[2].y);
+    double delta = 1.0 * (a1 * b2 + a2 * b1) * (a1 * b2 + a2 * b1) - 4.0 * a1 * a2 * b1 * b2;
+    if (delta < 0) return false;
+    if (a1 == 0 && a2 == 0) {
+        if (b1 * b2 < 0)
             return false;
+    }
+    else if (a1 == 0) {
+        double tmp = -1.0 * b2 / a2;
+        if (a2 > 0) t1 = max(t1, tmp);
+        else t2 = min(t2, tmp);
+    }
+    else if (a2 == 0) {
+        double tmp = -1.0 * b1 / a1;
+        if (a1 > 0) t1 = max(t1, tmp);
+        else t2 = min(t2, tmp);
     }
     else {
-        double tmp1 = 1.0 * (L - P.y) / Q.y;
-        double tmp2 = 1.0 * (R - P.y) / Q.y;
-        if (Q.y < 0) swap(tmp1, tmp2);
-        t1 = max(t1, tmp1);
-        t2 = min(t2, tmp2);
+        double x1 = (-1.0 * (a1 * b2 + a2 * b1) - sqrt(delta)) / (2.0 * a1 * a2);
+        double x2 = (-1.0 * (a1 * b2 + a2 * b1) + sqrt(delta)) / (2.0 * a1 * a2);
+        if (x1 > x2) swap(x1, x2);
+        t1 = max(t1, x1);
+        t2 = min(t2, x2);
     }
-    
-    L = box[i].lb.z, R = box[i].ru.z;
-    if (Q.z == 0) {
-        if (!(L <= P.z && P.z <= R))
+    if (t1 > t2) 
+        return false;
+    //judge DAxDE*BCxBE>=0
+    a1 = 1.0 * (Q.y - P.y) * (box[0].x - box[3].x) - 1.0 * (Q.x - P.x) * (box[0].y - box[3].y);
+    b1 = 1.0 * (P.y - box[3].y) * (box[0].x - box[3].x) - 1.0 * (P.x - box[3].x) * (box[0].y - box[3].y);
+    a2 = 1.0 * (Q.y - P.y) * (box[2].x - box[1].x) - 1.0 * (Q.x - P.x) * (box[2].y - box[1].y);
+    b2 = 1.0 * (P.y - box[1].y) * (box[2].x - box[1].x) - 1.0 * (P.x - box[1].x) * (box[2].y - box[1].y);
+    delta = 1.0 * (a1 * b2 + a2 * b1) * (a1 * b2 + a2 * b1) - 4.0 * a1 * a2 * b1 * b2;
+    if (delta < 0) return false;
+    if (a1 == 0 && a2 == 0) {
+        if (b1 * b2 < 0)
             return false;
     }
-    else {                                   
-        double tmp1 = 1.0 * (L - P.z) / Q.z;
-        double tmp2 = 1.0 * (R - P.z) / Q.z;
-        if (Q.z < 0) swap(tmp1, tmp2);
-        t1 = max(t1, tmp1);
-        t2 = min(t2, tmp2);
+    else if (a1 == 0) {
+        double tmp = -1.0 * b2 / a2;
+        if (a2 > 0) t1 = max(t1, tmp);
+        else t2 = min(t2, tmp);
     }
-    //cerr << t1 << ' ' << t2 << endl;
-    if (t1 <= t2)
-        return true;
+    else if (a2 == 0) {
+        double tmp = -1.0 * b1 / a1;
+        if (a1 > 0) t1 = max(t1, tmp);
+        else t2 = min(t2, tmp);
+    }
+    else {
+        double x1 = (-1.0 * (a1 * b2 + a2 * b1) - sqrt(delta)) / (2.0 * a1 * a2);
+        double x2 = (-1.0 * (a1 * b2 + a2 * b1) + sqrt(delta)) / (2.0 * a1 * a2);
+        if (x1 > x2) swap(x1, x2);
+        t1 = max(t1, x1);
+        t2 = min(t2, x2);
+    }
+    if (t1 <= t2) return true;
     return false;
 }
-int check_segement_cross_all_obstacles(point s, point t) {
-    for (int i = 0; i < n; ++i) {
-        if (check_segment_cross_obstacle(s, t - s, i))
+int check_all_insect(pointInt P, pointInt Q) {
+    for (int i = 0; i < boxs.size(); ++i) {
+        if (check_insect(P, Q, boxs[i]))
             return i;
     }
     return -1;
 }
-//检查点是否出界
-bool Vis[maxn][maxn][maxn], vis[maxn][maxn][maxn];
-bool check_outofbound(point p) { 
-    if (p.x < 0 || p.y < 0 || p.z < 0)
-        return true;
-    if (p.x > max_x + 1 || p.y > max_y + 1 || p.z > max_z + 1)
-        return true;
-    //if (vis[p.x][p.y][p.z])
-        //return true;
-    return false;
-}
-//方向向量      
 int dir[6][3] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
-//A*算法步骤
-
 namespace Astar {
-    point arr[maxm];
-    int front, rear, before_p[maxm]; //最短路径前溯节点
-    double dist[maxm], min_dist;
-    bool min_dist_flg = false;
+    //define
     struct heap_node {
         double h, g;
         int id;
@@ -160,209 +301,116 @@ namespace Astar {
             return h + g > rhs.h + rhs.g;
         }
     };
-    //记录该点对应数组的位置
+    priority_queue<heap_node, vector<heap_node>, greater<heap_node> > Q;
+    vector<pointInt> arr;
+    vector<double> dist;
+    vector<int> pre;
+    vector<pointInt> paths;
+    double min_dist;
     map<pair<int, pair<int, int> >, int> record;
-    pair<int, pair<int, int> > point2pair(point p) {
+    pair<int, pair<int, int> > point2pair(pointInt p) {
         return make_pair(p.x, make_pair(p.y, p.z));
     }
-    priority_queue<heap_node, vector<heap_node>, greater<heap_node> > Q;
-    bool Astar() {
+    void __init__() {
+        arr.clear();
+        dist.clear();
+        pre.clear();
+        record.clear();
+        paths.clear();
+        while (Q.size()) Q.pop();
+    }
+    bool __build__() {
         cerr << "A*算法搜索可达路径中。。。" << endl;
-        front = 0, rear = -1;
-        arr[++rear] = st; Q.push({0, get_dist(st, ed), 0}); before_p[0] = -1; dist[0] = 0;
-        record.clear(); record[point2pair(st)] = 0; vis[st.x][st.y][st.z] = 1;
+        arr.push_back(st); Q.push({0, get_dist(st, ed), 0});
+        pre.push_back(-1); dist.push_back(0);
+        record[point2pair(st)] = 0;
         while (!Q.empty()) {
             heap_node top = Q.top(); Q.pop();
-            point now = arr[top.id];
-            //cerr << now << endl;
+            pointInt now = arr[top.id];
+            //cerr << top.h << " " << top.g << ": " << now << endl;
             if (now == ed) {
                 min_dist = top.h;
                 return true;
             }
-            for (int i = 0; i < 6; ++i) {
-                point nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
-                if (check_outofbound(nx)) continue;
-                if (!vis[nx.x][nx.y][nx.z]) {
-                    arr[++rear] = nx;
-                    dist[rear] = 1.0 * INF;
-                    record[point2pair(nx)] = rear;
-                    vis[nx.x][nx.y][nx.z] = 1;
-                    for (int pre = 0; pre < rear; ++pre) {
-                        if (dist[pre] + get_dist(arr[pre], nx) < dist[rear]) if (check_segement_cross_all_obstacles(arr[pre], nx) == -1){
-                            dist[rear] = dist[pre] + get_dist(arr[pre], nx);
-                            before_p[rear] = pre;
+            for (int i = 0; i < 6; ++i) { 
+                pointInt nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
+                //check_is_out_of_bound
+                if (nx.x < 0 || nx.y < 0 || nx.z < 0) continue;
+                if (nx.x > range_x + 1 || nx.y > range_y + 1 || nx.z > range_z + 1) continue;
+                //check_is_able_to_reach
+                if (check_all_insect(now, nx) != -1) continue;
+                if (record.count(point2pair(nx)) == 0) {
+                    arr.push_back(nx);
+                    int id = arr.size() - 1;
+                    pre.push_back(top.id);
+                    dist.push_back(dist[top.id] + get_dist(now, nx));
+                    record[point2pair(nx)] = id;
+                    for (int pre_id = 0; pre_id < id; ++pre_id) {
+                        if (check_all_insect(arr[pre_id], nx) == -1) if (dist[pre_id] + get_dist(arr[pre_id], nx) < dist[id]) {
+                            dist[id] = dist[pre_id] + get_dist(arr[pre_id], nx);
+                            pre[id] = pre_id;
                         }
-                        
                     }
-                    Q.push({dist[rear], get_dist(nx, ed), rear});
+                    Q.push({dist[id], get_dist(nx, ed), id});
                 }
-                else if (record.count(point2pair(nx))) {
+                else {
                     int id = record[point2pair(nx)];
-                    for (int pre = id + 1; pre <= rear; ++pre) if (check_segement_cross_all_obstacles(arr[pre], nx) == -1) {
-                        dist[id] = min(dist[id], dist[pre] + get_dist(arr[pre], nx));
+                    bool isup = false;
+                    for (int preid = 0; preid < arr.size(); ++preid) if (preid != id && check_all_insect(arr[preid], arr[id]) == -1) {
+                        if (dist[preid] + get_dist(arr[preid], arr[id]) < dist[id]) {
+                            dist[id] = dist[preid] + get_dist(arr[preid], arr[id]);
+                            pre[id] = preid;
+                            isup = true;
+                        }
                     }
+                    //if (isup)
+                        //Q.push({dist[id], get_dist(nx, ed), id});
                 }
             }
         }
         return false;
     }
-    vector< point > paths;
-    void getpath() {
-        bool is_find_path = Astar();
-        if (!is_find_path) {
-            cerr << "没有找到路径！" << endl;
-            return;
-        }
-        for (int idx = record[point2pair(ed)]; idx != -1; idx = before_p[idx]) {
-            paths.push_back(arr[idx]);
+    bool __process__() {
+        int ed_idx = record[point2pair(ed)];
+        for (int i = ed_idx; i != -1; i = pre[i]) {
+            paths.push_back(arr[i]);
         }
         reverse(paths.begin(), paths.end());
         cerr << "找到经过" << paths.size() << "个点的路径";
         for (int i = 0; i < paths.size(); ++i) {
-            cout << paths[i] << endl;
             if (!i) cerr << paths[i];
             else cerr << "->" << paths[i];
         }
         cerr << endl;
-        cerr << "该条路径的长度为：" << min_dist << "，起点到终点的欧式距离为：" << get_dist(st, ed) << endl;
+        cerr << "该条路径的长度为：" << min_dist << "，恢复到原有精度距离为" << min_dist * precision << endl;
+        cerr << "起点到终点的欧式距离为：" << get_dist(raw_st, raw_out) << endl;
+        
+        
+        //output to file
+        cout << paths.size() << endl;
+        for (auto path : paths)
+            cout << path << endl;
+        return true;
+    }
+    int __main_() {
+        __init__();
+        bool build_flg = __build__();
+        if (!build_flg) {
+            cerr << "未找到从" << st << "到" << ed << "的有效路径！" << endl;
+            return 0;
+        }
+        __process__();
+        return 1;
     }
 }
-namespace BFS {
-    //define
-    int dist[maxn][maxn][maxn];
-    int dir[6][3] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
-    bool set_dist(point p, point pre) {
-        if (dist[p.x][p.y][p.z] > dist[pre.x][pre.y][pre.z] + 1) {
-            dist[p.x][p.y][p.z] = dist[pre.x][pre.y][pre.z] + 1;
-            return true;
-        }
-        return false;
-    }
-    point q[maxm]; int front, rear;
-    int pre[maxm], min_dist; bool min_dist_flg;
-    vector<int> ed_idxs;
-    //initial
-    void init() {
-        memset(dist, 0x3f, sizeof(dist));
-        dist[st.x][st.y][st.z] = 0;
-        vis[st.x][st.y][st.z] = 1;
-        front = 0; rear = -1;
-        q[++rear] = st; pre[0] = -1;
-        min_dist_flg = false;
-        ed_idxs.clear();
-    }
-    bool bfs() {
-        cerr << "正在搜索最短路径。。。" << endl;
-        while (front <= rear) {
-            point now = q[front++];
-            if (min_dist_flg && dist[now.x][now.y][now.z] > min_dist) continue;
-            if (now == ed) {
-                if (!min_dist_flg || dist[now.x][now.y][now.z] <= min_dist) {
-                    min_dist_flg = true;
-                    min_dist = dist[now.x][now.y][now.z];
-                    ed_idxs.push_back(front - 1);
-                }
-                continue;
-            }
-            
-            for (int i = 0; i < 6; ++i) {
-                point nx(now.x + dir[i][0], now.y + dir[i][1], now.z + dir[i][2]);
-                if (check_outofbound(nx)) continue;
-                if (check_insideofobstacles(nx)) continue;
-                if (!set_dist(nx, now)) continue;
-                q[++rear] = nx;
-                vis[nx.x][nx.y][nx.z] = 1;
-                pre[rear] = front - 1;
-            }
-        }
-        return ed_idxs.size() != 0;
-    }
-    
-    vector<point> path;
-    double optimal_dist; bool optimal_dist_flg;
-    
-    vector<double> dp_dist;
-    vector<int> tmp, tmp_pre;
-    void getpath() {
-        if (!bfs()) {
-            cerr << "未找到路径！" << endl;
-            return;
-        }
-        cerr << "共找到" << ed_idxs.size() << "条路径！开始拟合..." << endl;
-        optimal_dist_flg = false;
-        for (int k = 0; k < ed_idxs.size(); ++k) {
-            int ed_idx = ed_idxs[k];
-            cerr << "正在拟合第" << k + 1 << "条路径..." << endl;
-            tmp.clear();
-            for (int idx = ed_idx; idx != -1; idx = pre[idx]) {
-                tmp.push_back(idx);
-            }
-            reverse(tmp.begin(), tmp.end());
-            dp_dist.clear();
-            dp_dist.resize(tmp.size());
-            tmp_pre.clear();
-            tmp_pre.resize(tmp.size());
-            for (int i = 0; i < tmp.size(); ++i) {
-                if (!i) dp_dist[i] = 0;
-                else dp_dist[i] = dp_dist[i - 1] + get_dist(q[tmp[i]], q[tmp[i - 1]]);
-                tmp_pre[i] = i - 1;
-                
-                for (int j = 0; j < i; ++j) {
-                    if (check_segement_cross_all_obstacles(q[tmp[i]], q[tmp[j]]) == -1) {
-                        if (dp_dist[j] + get_dist(q[tmp[i]], q[tmp[j]]) < dp_dist[i]) {
-                            dp_dist[i] = dp_dist[j] + get_dist(q[tmp[i]], q[tmp[j]]);
-                            tmp_pre[i] = j;
-                        }
-                    }
-                }
-            }
-            cerr << "拟合完毕，该条路径长度为：" << dp_dist[tmp.size() - 1] << endl;
-            if (!optimal_dist_flg || dp_dist[tmp.size() - 1] < optimal_dist) {
-                optimal_dist_flg = true;
-                optimal_dist = dp_dist[tmp.size() - 1];
-                path.clear();
-                for (int i = tmp.size() - 1; i != -1; i = tmp_pre[i]) {
-                    path.push_back(q[tmp[i]]);
-                }
-                reverse(path.begin(), path.end());
-            }
-        }
-        cerr << "找到经过" << path.size() << "个点的路径";
-        for (int i = 0; i < path.size(); ++i) {
-            if (!i) cerr << path[i];
-            else cerr << "->" << path[i];
-        }
-        cerr << endl;
-        cerr << "该条路径的长度为：" << optimal_dist << "，起点到终点的欧式距离为：" << get_dist(st, ed) << endl;
-    }
-}
-
 int main()
 {
-    freopen("in.txt", "r", stdin);
-    freopen("out.txt", "w", stdout);
-    scanf("%d", &n);
-    read(st); read(ed);
-    max_x = max(st.x, ed.x); max_y = max(st.y, ed.y); max_z = max(st.z, ed.z);
-    for (int i = 0; i < n; ++i) {
-        read(box[i].lb); read(box[i].ru);
-    }
-    //标记不可标记的点
-    for (int r = 0; r < n; ++r) {
-        max_x = max(max_x, box[r].ru.x), max_y = max(max_y, box[r].ru.y), max_z = max(max_z, box[r].ru.z);
-        for (int i = box[r].lb.x; i <= box[r].ru.x; ++i) {
-            for (int j = box[r].lb.y; j <= box[r].ru.y; ++j) {
-                for (int k = box[r].lb.z; k <= box[r].ru.z; ++k) {
-                    Vis[i][j][k] = 1;
-                }
-            }
-        }
-    }
-    cerr << "出发点：" << st << endl;
-    cerr << "终点：" << ed << endl;
-    //cerr << check_segement_cross_all_obstacles(st, ed) << endl;
-    memcpy(vis, Vis, sizeof(Vis));
-    Astar::getpath();
-    //memcpy(vis, Vis, sizeof(Vis));
-    //BFS::getpath();
+    freopen("in4.txt", "r", stdin);
+    freopen("out4.txt", "w", stdout);
+    read_data();
+    process_data();
+    Astar::__main_();
+    //pointInt p(3, 39, 3);
+    //pointInt q(3, 46, 2);
+    //cerr << check_all_insect(p, q);
 }

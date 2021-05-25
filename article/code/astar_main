@@ -42,8 +42,8 @@
                             isup = true;
                         }
                     }
-                    if (isup)
-                        Q.push({dist[id], get_dist(nx, ed), id});
+                    //if (isup)
+                        //Q.push({dist[id], get_dist(nx, ed), id});
                 }
             }
         }
@@ -57,13 +57,18 @@
         reverse(paths.begin(), paths.end());
         cerr << "找到经过" << paths.size() << "个点的路径";
         for (int i = 0; i < paths.size(); ++i) {
-            cout << paths[i] << endl;
             if (!i) cerr << paths[i];
             else cerr << "->" << paths[i];
         }
         cerr << endl;
         cerr << "该条路径的长度为：" << min_dist << endl;
         cerr << "起点到终点的欧式距离为：" << get_dist(st, ed) << endl;
+        
+        
+        //output to file
+        cout << paths.size() << endl;
+        for (auto path : paths)
+            cout << path << endl;
         return true;
     }
     int __main_() {
